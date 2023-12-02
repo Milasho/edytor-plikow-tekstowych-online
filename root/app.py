@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 # Wewnetrzne biblioteki
 from modules.db_utils import *
+from modules.credentials_helper import UserPass
 from pages.menu import Menu
 
 
