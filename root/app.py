@@ -7,7 +7,7 @@ from flask import g
 from dotenv import load_dotenv
 
 # Wewnetrzne biblioteki
-import modules.db_utils
+from modules.db_utils import *
 from pages.menu import Menu
 
 
@@ -30,20 +30,22 @@ app.config['DATABASE'] =  os.getenv("DB_PATH")    # Pobranie sciezki do bazy dan
 
 @app.route('/')
 def index():
-    return render_template('templates/index.html')
+    return render_template('templates/index.html', nav_active='index')
 
 
 @app.route('/panel')
 def panel():
     menu = Menu()
     menu.princik()
-    return '<h1>aaaa</h1>'
+    return render_template('templates/base.html', nav_active='link')
 
 
 # ------- Baza Danych -------
 
-@app.teardown_appcontext  # Dekorator Flask do rejestrowania funkcji uzywanej przy zamknieciu aplikacji
+@app.teardown_appcontext
 def close_db(error):
+    '''Dekorator Flask do rejestrowania funkcji uzywanej przy zamknieciu aplikacji.\n
+    Upewnia sie ze polaczenie z baza danych zostanie zamkniete.'''
     if hasattr(g, 'db'):
         g.db.close()
 
