@@ -1,0 +1,4 @@
+
+# Zmienne srodowiskowe
+*.env
+.flaskenv
