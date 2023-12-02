@@ -2,3 +2,6 @@
 # Zmienne srodowiskowe
 *.env
 .flaskenv
+
+# Pozostale
+*__pycache__
