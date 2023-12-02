@@ -2,13 +2,12 @@
 # Zewnetrzne biblioteki
 import sqlite3
 import os
-from flask import Flask, flash, render_template
-from flask import g 
+from flask import Flask, flash, url_for, render_template, redirect, g, request, session
 from dotenv import load_dotenv
 
 # Wewnetrzne biblioteki
 from modules.db_utils import *
-from modules.credentials_helper import UserPass
+from modules.session_manager import UserPass
 from pages.menu import Menu
 
 
@@ -31,15 +30,34 @@ app.config['DATABASE'] =  os.getenv("DB_PATH")    # Pobranie sciezki do bazy dan
 
 @app.route('/')
 def index():
-    return render_template('templates/index.html', nav_active='index')
+    return render_template('templates/index.html', active_navbar_part='index')
 
+@app.route('/login', methods=['GET','POST'])
+def login():
 
-@app.route('/panel')
-def panel():
-    menu = Menu()
-    menu.princik()
-    return render_template('templates/base.html', nav_active='link')
+    if request.method == 'GET':
+        return render_template('templates/login.html', active_navbar_part='login')
+    else:
+        user_name = '' if 'user_name' not in request.form else request.form['user_name']
+        user_pass = '' if 'user_pass' not in request.form else request.form['user_pass']
 
+    login = UserPass(user_name, user_pass)
+    login_record = login.login_user()
+
+    if login_record != None:
+        session['user'] = user_name
+        flash('Logon succesfull, welcome {}'.format(user_name))
+        return redirect(url_for('index'))
+    else:
+        flash('Logon failed, try again')
+        return render_template('templates/login.html', active_navbar_part='login')
+
+@app.route('/logout')
+def logout():
+    if 'user' in session:
+        session.pop('user', None)
+        flash('You are logged out')
+    return redirect(url_for('teplates/login.html')) 
 
 # ------- Baza Danych -------
 
