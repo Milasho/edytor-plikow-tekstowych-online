@@ -1,7 +1,10 @@
-
 # Zmienne srodowiskowe
 *.env
 .flaskenv
 
+# Bazy danych
+/SQLite3/*.exe
+
 # Pozostale
 *__pycache__
+
