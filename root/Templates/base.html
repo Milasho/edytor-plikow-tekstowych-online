@@ -11,10 +11,10 @@
     <body>
         <!-- Zawartosc body -->
         {% block body %}
+            <!-- Umieszczenie paska nawigacyjnego -->
+            {% include "navbar.html" %}
+            {% block content %} {% endblock %}
 
-        {% block navbar %} {% endblock %}
-        {% block content %} {% endblock %}
-        
         {% endblock %}
 
         <!-- Skrypty od Bootstrapa -->

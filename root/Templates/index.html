@@ -10,8 +10,9 @@ Edytor Plików Tekstowych Online
 <!-- Wypelnienie bloku body-->
 {% block body %}
 
-    <!-- Umieszczenie paska nawigacyjnego -->
-    {% include "navbar.html" %}
+    <!-- Wywolanie super(), aby uniknac przeslonienia block body z base.html -->
+    {{ super() }}
+
 
 {% endblock %}
 
