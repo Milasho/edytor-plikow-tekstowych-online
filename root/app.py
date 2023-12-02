@@ -3,18 +3,29 @@
 
 # Zewnetrzne biblioteki
 from flask import Flask, flash, render_template
-import os
+# from flask_bootstrap import Bootstrap
 from dotenv import load_dotenv
+import os
 
 # Wewnetrzne biblioteki
 from Pages.menu import Menu
 
+# ------- Inicjalizacja Modulow -------
+# _____________________________________
+
+app = Flask(__name__)   # Instancja aplikacji Flask
+#bootstrap = Bootstrap(app)  # Instancja Bootstrap
+
 # ------- Konfiguracja -------
 # ____________________________
 
-app = Flask(__name__)   # Deklaracja aplikacji Flask
 load_dotenv()   # Wczytanie zmiennych srodowiskowych z .env
-app.config['SECRET_KEY'] =  os.getenv("SECRET_KEY")    # Pobranie klucza
+app.config['SECRET_KEY'] =  os.getenv("SECRET_KEY")    # Pobranie klucza z tajnego miejsca
+
+
+# __________________________________________________
+#             ------- Kod Glowny -------
+# __________________________________________________
 
 
 # ------- Routes -------
