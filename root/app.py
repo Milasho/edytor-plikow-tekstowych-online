@@ -41,16 +41,20 @@ def login():
         user_name = '' if 'user_name' not in request.form else request.form['user_name']
         user_pass = '' if 'user_pass' not in request.form else request.form['user_pass']
 
-    login = UserPass(user_name, user_pass)
-    login_record = login.login_user()
+        # Utworzenie obiektu na podstawie danych wpisanych przez uzytkownika
+        login = UserPass(app, user_name, user_pass)
 
-    if login_record != None:
-        session['user'] = user_name
-        flash('Logon succesfull, welcome {}'.format(user_name))
-        return redirect(url_for('index'))
-    else:
-        flash('Logon failed, try again')
-        return render_template('templates/login.html', active_navbar_part='login')
+        # TODO: Refaktoryzacja sprawdzania credentiali ?
+        # Weryfikacja uzytkownika 
+        login_record = login.login_user()
+
+        if login_record != None:
+            session['user'] = user_name
+            flash('Logowanie powiodło się, witaj: {}!'.format(user_name))
+            return redirect(url_for('index'))
+        else:
+            flash('Logowanie nie powiodło się, spróbuj ponownie.')
+            return render_template('templates/login.html', active_navbar_part='login')
 
 @app.route('/logout')
 def logout():
@@ -63,8 +67,8 @@ def logout():
 
 @app.teardown_appcontext
 def close_db(error):
-    '''Dekorator Flask do rejestrowania funkcji uzywanej przy zamknieciu aplikacji.\n
-    Upewnia sie ze polaczenie z baza danych zostanie zamkniete.'''
+    '''Upewnia sie ze polaczenie z baza danych zostanie zamkniete.'''
+    # Uzywa Dekoratora Flask teardown_appcontext do rejestrowania funkcji uzywanej przy zamknieciu aplikacji.
     if hasattr(g, 'db'):
         g.db.close()
 

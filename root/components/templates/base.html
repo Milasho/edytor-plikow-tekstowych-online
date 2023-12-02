@@ -11,6 +11,9 @@
     <body>
         <!-- Umieszczenie paska nawigacyjnego -->
         {% include "navbar/navbar.html" %}
+        
+        <!-- Wyswietlenie wszystkich ewentualnych komunikaty typu flash (Flask) -->
+        {{ show_all_flash_messages() }}
 
         <!-- Zawartosc body, nazwa 'content' w celu prawidlowego dzialania Bootstrapa -->
         {% block content %}
