@@ -7,11 +7,11 @@ import sqlite3
 import os
 
 # Wewnetrzne biblioteki
-from Pages.menu import Menu
+from pages.menu import Menu
 
 
 # ------- Inicjalizacja Modulow -------
-app = Flask(__name__)   # Instancja aplikacji Flask
+app = Flask(__name__, template_folder='components')   # Instancja aplikacji Flask
 
 
 # ------- Konfiguracja -------
@@ -29,7 +29,7 @@ app.config['DATABASE'] =  os.getenv("DB_PATH")    # Pobranie sciezki do bazy dan
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('templates/index.html')
 
 
 @app.route('/panel')

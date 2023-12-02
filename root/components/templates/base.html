@@ -1,4 +1,4 @@
-{% from "macros.html" import show_flash_message, show_all_flash_messages %}
+{% from "macros/macros.html" import show_flash_message, show_all_flash_messages %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -10,7 +10,7 @@
     </head>
     <body>
         <!-- Umieszczenie paska nawigacyjnego -->
-        {% include "navbar.html" %}
+        {% include "navbar/navbar.html" %}
 
         <!-- Zawartosc body, nazwa 'content' w celu prawidlowego dzialania Bootstrapa -->
         {% block content %}
