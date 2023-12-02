@@ -3,7 +3,6 @@
 
 # Zewnetrzne biblioteki
 from flask import Flask, flash, render_template
-# from flask_bootstrap import Bootstrap
 from dotenv import load_dotenv
 import os
 
@@ -14,7 +13,6 @@ from Pages.menu import Menu
 # _____________________________________
 
 app = Flask(__name__)   # Instancja aplikacji Flask
-#bootstrap = Bootstrap(app)  # Instancja Bootstrap
 
 # ------- Konfiguracja -------
 # ____________________________
