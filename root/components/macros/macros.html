@@ -1,0 +1,14 @@
+{% macro test(argument) %}
+    <div style="color:black; background-color: gray;">{{ argument }}</div>
+{% endmacro %}
+
+{% macro show_flash_message(message)%}
+    <div style="color:red; background-color: gray;">{{ message }}</div>
+{% endmacro %}
+
+{% macro show_all_flash_messages() %}
+    {% for message in messages %}
+        {{ show_flash_message(message) }}
+    {% endfor %}
+{% endmacro %}
+
