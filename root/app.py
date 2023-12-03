@@ -26,7 +26,7 @@ app.config['DATABASE'] =  os.getenv("DB_PATH")    # Pobranie sciezki do bazy dan
 # __________________________________________________
 
 
-# ------- Routes -------
+# ------- Trasy (Routes) -------
 
 @app.route('/')
 def index():
@@ -63,6 +63,31 @@ def login():
         else:
             flash('Logowanie nie powiodło się, spróbuj ponownie.')
             return render_template('templates/login.html', active_navbar_part='login')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    # Zabezpieczenie przed proba polaczenia sie przez wpisanie adresu
+    if check_if_logged() == True:
+        return redirect(url_for('index'))
+
+    if request.method == 'GET':
+        return render_template('templates/register.html', active_navbar_part='register')
+    else:
+        user_name = '' if 'user_name' not in request.form else request.form['user_name']
+        user_pass = '' if 'user_pass' not in request.form else request.form['user_pass']
+
+        # Utworzenie obiektu na podstawie danych wpisanych przez użytkownika
+        registration = UserPass(app, user_name, user_pass)
+        # Weryfikacja użytkownika
+        registration_record = registration.register_user()
+
+        if registration_record != None:
+            session['user'] = user_name
+            flash('Rejestracja powiodła się, witaj: {}!'.format(user_name))
+            return redirect(url_for('index'))
+        else:
+            flash('Rejestracja nie powiodła się, spróbuj ponownie.')
+            return render_template('templates/register.html', active_navbar_part='register')
 
 @app.route('/logout')
 def logout():

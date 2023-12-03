@@ -47,7 +47,7 @@ class UserPass:
       random_user = ''.join(random.choice(string.ascii_lowercase)for i in range(3))
       self.usernamename = random_user
 
-      password_characters = string.ascii_letters #+ string.digits + string.punctuation
+      password_characters = string.ascii_letters # + string.digits + string.punctuation
       random_password = ''.join(random.choice(password_characters)for i in range(3))
       self.password = random_password 
 

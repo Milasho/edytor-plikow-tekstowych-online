@@ -16,6 +16,9 @@
                     <a class="nav-link {{ 'active' if active_navbar_part=='login' }}" {% if logged %}style="display: none;"{% endif %} href="{{ url_for('login') }}">Logowanie</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_navbar_part=='register' }}" {% if logged %}style="display: none;"{% endif %} href="{{ url_for('login') }}">Rejestracja</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {{ 'active' if active_navbar_part=='edytor' }}" {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('logged_emulator') }}">Edytor</a>
                 </li>
                 <li class="nav-item" {% if not logged %}style="display: none;"{% endif %}>
