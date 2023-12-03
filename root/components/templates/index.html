@@ -18,9 +18,25 @@ Edytor Plików Tekstowych Online
     <div class="row mt-1">
         <div class="col-12 text-center">
             <img src="{{ url_for('static', filename='notatnik.webp') }}" class="rounded mx-auto d-block" style="width: 20%;">
-            <a href="{{ url_for('login') }}" class="btn btn-info mt-2" style="width: 20%;">Zaloguj się</a>
+    
+            <div class="mt-2">
+                <a {% if logged %}style="display: none;"{% endif %} href="{{ url_for('login') }}" class="btn btn-info" style="width: 20%;">Zaloguj się</a>
+            </div>
+            <div class="mt-2">
+                <a {% if logged %}style="display: none;"{% endif %} href="{{ url_for('login') }}" class="btn btn-success" style="width: 20%;">Rejestracja</a>
+            </div>
+            <div class="mt-2">
+                <a {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('index') }}" class="btn btn-success" style="width: 20%;">Otwórz Edytor</a>
+            </div>           
+            <div class="mt-2">
+                <a {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('index') }}" class="btn btn-warning" style="width: 20%;">Zarządzaj Swoimi Plikami</a>
+            </div>
+            <div class="mt-2">
+                <a {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('logout') }}" class="btn btn-danger" style="width: 20%;">Wyloguj się</a>
+            </div>
         </div>
     </div>
+    
     
 
     <div class="row mt-3">
@@ -33,4 +49,3 @@ Edytor Plików Tekstowych Online
     </div>
 </div>
 {% endblock %}
-

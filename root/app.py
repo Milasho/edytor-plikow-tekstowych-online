@@ -30,10 +30,18 @@ app.config['DATABASE'] =  os.getenv("DB_PATH")    # Pobranie sciezki do bazy dan
 
 @app.route('/')
 def index():
-    return render_template('templates/index.html', active_navbar_part='index')
+    return render_template('templates/index.html', active_navbar_part='index', logged=check_if_logged())
+    
+@app.route('/debug-login')
+def logged_emulator():
+    session['user'] = 'test'
+    return render_template('templates/index.html', active_navbar_part='index', logged=True)
 
 @app.route('/login', methods=['GET','POST'])
 def login():
+    # Zabezpieczenie przed proba polaczenia sie przez wpisanie adresu
+    if check_if_logged() == True:
+        return redirect(url_for('index'))
 
     if request.method == 'GET':
         return render_template('templates/login.html', active_navbar_part='login')
@@ -58,10 +66,11 @@ def login():
 
 @app.route('/logout')
 def logout():
-    if 'user' in session:
+    if 'user' in session:  # Uzytkownik zalogowany w sesji
         session.pop('user', None)
-        flash('You are logged out')
-    return redirect(url_for('teplates/login.html')) 
+        flash('Użytkownik został wylogowany')
+    return redirect(url_for('index'))
+    #return render_template('templates/index.html', active_navbar_part='index', logged=check_if_logged())
 
 # ------- Baza Danych -------
 
@@ -73,6 +82,12 @@ def close_db(error):
         g.db.close()
 
 # ------- Pozostale -------
+
+def check_if_logged():
+    if 'user' in session:
+        return True
+    else:
+        return False
 
 # Kompatybilnosc z uruchomieniem przez Python
 if __name__ == '__main__':

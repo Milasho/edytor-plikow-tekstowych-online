@@ -12,12 +12,15 @@
                 <li class="nav-item">
                     <a class="nav-link {{ 'active' if active_navbar_part=='index' }}" href="{{ url_for('index') }}">Strona Główna</a>
                 </li>
-                    <li class="nav-item">
-                <a class="nav-link {{ 'active' if active_navbar_part=='login' }}" href="{{ url_for('login') }}">Logowanie</a>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_navbar_part=='login' }}" {% if logged %}style="display: none;"{% endif %} href="{{ url_for('login') }}">Logowanie</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link disabled" href="#">Disabled</a>
+                    <a class="nav-link {{ 'active' if active_navbar_part=='edytor' }}" {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('logged_emulator') }}">Edytor</a>
                 </li>
+                <li class="nav-item" {% if not logged %}style="display: none;"{% endif %}>
+                    <a class="nav-link" href="{{ url_for('logout') }}">Wyloguj</a>
+                </li>                                          
             </ul>
         </div>
     </nav>
