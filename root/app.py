@@ -91,8 +91,15 @@ def register():
             return redirect(url_for('index'))
         else:
             flash('Rejestracja nie powiodła się, użytkownik o takim loginie bądź adresie e-mail już istnieje.')
-            flash(user_email)
             return render_template('templates/register.html', active_navbar_part='register')
+
+@app.route('/files')
+def files():
+    # Zabezpieczenie przed proba polaczenia sie przez wpisanie adresu
+    if check_if_logged() == False:
+        return redirect(url_for('index'))
+
+    return render_template('templates/files.html', active_navbar_part='files', logged=check_if_logged())
 
 @app.route('/logout')
 def logout():

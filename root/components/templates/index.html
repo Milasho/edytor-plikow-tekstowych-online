@@ -29,7 +29,7 @@ Edytor Plików Tekstowych Online
                 <a {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('index') }}" class="btn btn-success" style="width: 20%;">Otwórz Edytor</a>
             </div>           
             <div class="mt-2">
-                <a {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('index') }}" class="btn btn-warning" style="width: 20%;">Zarządzaj Swoimi Plikami</a>
+                <a {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('files') }}" class="btn btn-warning" style="width: 20%;">Zarządzaj Swoimi Plikami</a>
             </div>
             <div class="mt-2">
                 <a {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('logout') }}" class="btn btn-danger" style="width: 20%;">Wyloguj się</a>

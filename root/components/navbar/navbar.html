@@ -19,7 +19,10 @@
                     <a class="nav-link {{ 'active' if active_navbar_part=='register' }}" {% if logged %}style="display: none;"{% endif %} href="{{ url_for('register') }}">Rejestracja</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ 'active' if active_navbar_part=='edytor' }}" {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('logged_emulator') }}">Edytor</a>
+                    <a class="nav-link disabled {{ 'active' if active_navbar_part=='editor' }}" {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('index') }}">Edytor</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_navbar_part=='files' }}" {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('files') }}">Pliki</a>
                 </li>
                 <li class="nav-item" {% if not logged %}style="display: none;"{% endif %}>
                     <a class="nav-link" href="{{ url_for('logout') }}">Wyloguj</a>
