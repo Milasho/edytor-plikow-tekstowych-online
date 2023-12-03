@@ -91,6 +91,7 @@ def register():
             return redirect(url_for('index'))
         else:
             flash('Rejestracja nie powiodła się, użytkownik o takim loginie bądź adresie e-mail już istnieje.')
+            flash(user_email)
             return render_template('templates/register.html', active_navbar_part='register')
 
 @app.route('/logout')
