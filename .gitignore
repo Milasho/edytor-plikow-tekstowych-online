@@ -6,5 +6,6 @@
 /SQLite3/*.exe
 
 # Pozostale
+*.vscode
 *__pycache__
 
