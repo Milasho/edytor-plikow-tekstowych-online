@@ -18,7 +18,8 @@ app = Flask(__name__, template_folder='components')   # Instancja aplikacji Flas
 # ------- Konfiguracja -------
 load_dotenv()   # Wczytanie zmiennych srodowiskowych z .env
 app.config['SECRET_KEY'] =  os.getenv("SECRET_KEY")    # Pobranie klucza z tajnego miejsca
-app.config['DATABASE'] =  os.getenv("DB_PATH")    # Pobranie sciezki do bazy danych
+app.config['DATABASE'] =  os.getenv("DB_PATH")
+app.config['DEFAULT_SAVE_SLOTS_NUMBER'] = os.getenv("DEFAULT_SAVE_SLOTS_NUMBER")  
 
 
 # __________________________________________________
@@ -64,6 +65,7 @@ def login():
             flash('Logowanie nie powiodło się, spróbuj ponownie.')
             return render_template('templates/login.html', active_navbar_part='login')
 
+# TODO: Poprawic Te funkcje
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     # Zabezpieczenie przed proba polaczenia sie przez wpisanie adresu
@@ -75,9 +77,11 @@ def register():
     else:
         user_name = '' if 'user_name' not in request.form else request.form['user_name']
         user_pass = '' if 'user_pass' not in request.form else request.form['user_pass']
+        user_email = '' if 'user_email' not in request.form else request.form['user_email']
+        user_slots = app.config['DEFAULT_SAVE_SLOTS_NUMBER'] if 'user_slots' not in request.form else request.form['user_slots']
 
         # Utworzenie obiektu na podstawie danych wpisanych przez użytkownika
-        registration = UserPass(app, user_name, user_pass)
+        registration = UserPass(app, user_name, user_pass, user_email, user_slots)
         # Weryfikacja użytkownika
         registration_record = registration.register_user()
 
@@ -86,14 +90,14 @@ def register():
             flash('Rejestracja powiodła się, witaj: {}!'.format(user_name))
             return redirect(url_for('index'))
         else:
-            flash('Rejestracja nie powiodła się, spróbuj ponownie.')
+            flash('Rejestracja nie powiodła się, użytkownik o takim loginie bądź adresie e-mail już istnieje.')
             return render_template('templates/register.html', active_navbar_part='register')
 
 @app.route('/logout')
 def logout():
     if 'user' in session:  # Uzytkownik zalogowany w sesji
         session.pop('user', None)
-        flash('Użytkownik został wylogowany')
+        flash('Użytkownik został wylogowany.')
     return redirect(url_for('index'))
     #return render_template('templates/index.html', active_navbar_part='index', logged=check_if_logged())
 

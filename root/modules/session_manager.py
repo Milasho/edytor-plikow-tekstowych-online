@@ -13,10 +13,12 @@ from modules.db_utils import get_db
 
 class UserPass:
 
-   def __init__(self, app : Flask, user='', password=''):
+   def __init__(self, app : Flask, user='', password='', email='', slots=0):
       self.app = app
       self.username = user
       self.password = password
+      self.email = email
+      self.save_slots = slots
 
    def verify_password(self, stored_password, provided_password):
       '''Sprawdza poprawnosc hasla uzytkownika'''
@@ -64,3 +66,33 @@ class UserPass:
          self.username = None
          self.password
          return None
+
+   def register_user(self):
+         '''Rejestruje nowego uzytkownika w bazie danych'''
+         # FIXME: email w bazie danych
+         # FIXME: istniejacy uzytkownicy
+
+         # Sprawdzamy, czy użytkownik o podanej nazwie już istnieje
+         db = get_db(self.app)
+
+         check_user_sql = 'SELECT user_id, username, password, email, save_slots FROM users WHERE username=? OR email=?'
+         existing_user = db.execute(check_user_sql, [self.username, self.email]).fetchone()
+
+         #check_user_sql = 'SELECT user_id FROM users WHERE username=?'
+         #existing_user = db.execute(check_user_sql, [self.username]).fetchone()
+
+         if existing_user:
+            # Użytkownik już istnieje
+            return None
+
+         # Wstawiamy nowego użytkownika do bazy danych
+         hashed_password = self.hash_password()
+         insert_user_sql = 'INSERT INTO users (username, password, email, save_slots) VALUES (?, ?, ?, ?)'
+         db.execute(insert_user_sql, [self.username, hashed_password, self.email, self.save_slots])
+         db.commit()
+
+         # Pobieramy zarejestrowanego użytkownika
+         registered_user_sql = 'SELECT user_id, username, password, email, save_slots FROM users WHERE username=?'
+         user_record = db.execute(registered_user_sql, [self.username]).fetchone()
+
+         return user_record
