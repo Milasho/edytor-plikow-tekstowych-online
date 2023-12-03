@@ -69,17 +69,12 @@ class UserPass:
 
    def register_user(self):
          '''Rejestruje nowego uzytkownika w bazie danych'''
-         # FIXME: email w bazie danych
-         # FIXME: istniejacy uzytkownicy
 
          # Sprawdzamy, czy użytkownik o podanej nazwie już istnieje
          db = get_db(self.app)
 
          check_user_sql = 'SELECT user_id, username, password, email, save_slots FROM users WHERE username=? OR email=?'
          existing_user = db.execute(check_user_sql, [self.username, self.email]).fetchone()
-
-         #check_user_sql = 'SELECT user_id FROM users WHERE username=?'
-         #existing_user = db.execute(check_user_sql, [self.username]).fetchone()
 
          if existing_user:
             # Użytkownik już istnieje
