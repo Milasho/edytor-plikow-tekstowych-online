@@ -1,0 +1,22 @@
+{% from "macros/macros.html" import show_all_flash_messages %}
+
+<!-- Dziedziczenia stron -->
+{% extends "templates/base.html" %}
+
+<!-- Wypelnienie tytulu-->
+{% block title %}
+Logowanie do edytora
+{% endblock %}
+
+{% block content %}
+{{ ckeditor.load(pkg_type="basic") }}
+
+<form method="post">
+    {{ ckeditor.create() }}
+    <input type="submit">
+</form>
+
+<div class="container">
+    test
+</div>
+{% endblock %} 

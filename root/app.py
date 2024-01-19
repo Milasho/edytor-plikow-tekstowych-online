@@ -3,6 +3,7 @@
 import sqlite3
 import os
 from flask import Flask, flash, url_for, render_template, redirect, g, request, session
+from flask_ckeditor import CKEditor
 from dotenv import load_dotenv
 
 # Wewnetrzne biblioteki
@@ -13,6 +14,7 @@ from pages.menu import Menu
 
 # ------- Inicjalizacja Modulow -------
 app = Flask(__name__, template_folder='components')   # Instancja aplikacji Flask
+ckeditor = CKEditor(app)  # Instancja edytora tekstowego
 
 
 # ------- Konfiguracja -------
@@ -28,6 +30,16 @@ app.config['DEFAULT_SAVE_SLOTS_NUMBER'] = os.getenv("DEFAULT_SAVE_SLOTS_NUMBER")
 
 
 # ------- Trasy (Routes) -------
+import os
+from flask import Flask, flash, url_for, render_template, redirect, g, request, session
+from dotenv import load_dotenv
+
+# Wewnetrzne biblioteki
+from modules.db_utils import *
+from modules.session_manager import UserPass
+from pages.menu import Menu
+
+
 
 @app.route('/')
 def index():
@@ -100,6 +112,14 @@ def files():
         return redirect(url_for('index'))
 
     return render_template('templates/files.html', active_navbar_part='files', logged=check_if_logged())
+
+@app.route('/editor')
+def editor():
+    # Zabezpieczenie przed proba polaczenia sie przez wpisanie adresu
+    if check_if_logged() == False:
+        return redirect(url_for('index'))
+
+    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged())
 
 @app.route('/logout')
 def logout():
