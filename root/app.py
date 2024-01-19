@@ -40,7 +40,6 @@ from modules.session_manager import UserPass
 from pages.menu import Menu
 
 
-
 @app.route('/')
 def index():
     return render_template('templates/index.html', active_navbar_part='index', logged=check_if_logged())
@@ -113,6 +112,13 @@ def files():
 
     return render_template('templates/files.html', active_navbar_part='files', logged=check_if_logged())
 
+@app.route('/write')
+def new_post():
+    if request.method == 'POST':
+        data = request.form.get('ckeditor')  # <--
+
+    return render_template('index.html')
+    
 @app.route('/editor')
 def editor():
     # Zabezpieczenie przed proba polaczenia sie przez wpisanie adresu

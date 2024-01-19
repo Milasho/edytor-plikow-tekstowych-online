@@ -9,14 +9,13 @@ Logowanie do edytora
 {% endblock %}
 
 {% block content %}
-{{ ckeditor.load(pkg_type="basic") }}
-
+<script src="{{url_for('static', filename='js/ckeditor/ckeditor.js')}}"></script>
 <form method="post">
     {{ ckeditor.create() }}
     <input type="submit">
 </form>
 
 <div class="container">
-    test
+
 </div>
 {% endblock %} 

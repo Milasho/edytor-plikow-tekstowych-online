@@ -8,5 +8,6 @@
 # Pozostale
 *.vscode
 /root/venv
+root/static/js
 *__pycache__
 
