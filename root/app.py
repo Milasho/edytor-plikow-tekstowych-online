@@ -127,6 +127,17 @@ def editor():
 
     return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged())
 
+@app.route('/editor')
+def editor():
+    # Zabezpieczenie przed próbą połączenia się przez wpisanie adresu
+    if check_if_logged() == False:
+        return redirect(url_for('index'))
+
+    file_id = 1  # Załóżmy, że chcesz edytować plik o identyfikatorze 1
+    file_content = get_file_content_by_id(file_id)
+
+    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(), file_content=file_content)
+
 @app.route('/logout')
 def logout():
     if 'user' in session:  # Uzytkownik zalogowany w sesji

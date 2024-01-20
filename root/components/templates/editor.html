@@ -11,11 +11,31 @@ Logowanie do edytora
 {% block content %}
 <script src="{{url_for('static', filename='js/ckeditor/ckeditor.js')}}"></script>
 <form method="post">
-    {{ ckeditor.create() }}
+    <!-- Miejsce na treść pobraną z bazy danych -->
+    <textarea name="ckeditor" id="ckeditor" rows="10" cols="80">
+        {{ file_content }}
+    </textarea>
+
+    <!-- Skrypt CKEditor -->
+    <script>
+        // Pobierz treść z bazy danych (możesz użyć wstawiania kodu w Pythonie)
+        var contentFromDatabase = "{{ file_content }}";
+
+        // Zastąp <textarea> CKEditorem
+        CKEDITOR.replace('ckeditor', {
+            // Konfiguracja CKEditor, jeśli potrzebujesz
+        }).setData(contentFromDatabase); // Ustawienie danych z bazy danych
+    </script>
+
+    <!-- Przycisk submit -->
     <input type="submit">
 </form>
 
-<div class="container">
+<!-- Importuj CKEditor -->
+<script src="{{url_for('static', filename='js/ckeditor/ckeditor.js')}}"></script>
 
+
+<div class="container">
+buttony goes here
 </div>
 {% endblock %} 
