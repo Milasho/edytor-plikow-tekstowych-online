@@ -13,19 +13,7 @@ def get_db(app : Flask):
         g.db.row_factory = sqlite3.Row  # Zwracane dane beda w postaci slownikow (unikniecie tuple)
     return g.db
 
-def get_file_content_by_id(file_id):
-    '''Pobierz zawartość pliku tekstowego z bazy danych na podstawie ID.
-    :param file_id: id pliku odpowiadajace temu z bazy danych'''
-    try:
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute('SELECT content FROM files WHERE file_id = ?', (file_id,))
-        file_content = cursor.fetchone()
-        return file_content[0] if file_content else ''  # Zwróć zawartość lub pusty ciąg, jeśli plik nie istnieje
-    finally:
-        conn.close()
-
-def get_file_id(username: str, slot_id: int) -> int:
+def get_file_id(username: str, slot_id: int, app : Flask) -> int:
     """Uzyskaj id pliku z bazy danych na podstawie identyfikatora użytkownika i numeru slotu.
 
     :param username: nazwa użytkownika.
@@ -37,7 +25,7 @@ def get_file_id(username: str, slot_id: int) -> int:
         raise ValueError('Nieprawidłowe parametry')
 
     try:
-        conn = get_db()
+        conn = get_db(app)
         cursor = conn.cursor()
 
         user_id = _get_user_id(username=username, conn=conn)
@@ -52,18 +40,53 @@ def get_file_id(username: str, slot_id: int) -> int:
     finally:
         conn.close()
 
-def _get_user_id(username: str, conn: g.db) -> int:
+def get_file_content_by_id(file_id, app : Flask):
+    '''Pobierz zawartość pliku tekstowego z bazy danych na podstawie ID.
+    :param file_id: id pliku odpowiadajace temu z bazy danych'''
+    try:
+        conn = get_db(app)
+        cursor = conn.cursor()
+        cursor.execute('SELECT content FROM user_files WHERE file_id = ?', (file_id))
+        file_content = cursor.fetchone()
+        return file_content[0] if file_content else ''  # Zwróć zawartość lub pusty ciąg, jeśli plik nie istnieje
+    finally:
+        conn.close()
+
+def get_files_with_ids(username: str, app : Flask) -> list:
+    '''Pobiera listę plików wraz z ich identyfikatorami na podstawie nazwy użytkownika.'''
+    try:
+        conn = get_db(app)
+        cursor = conn.cursor()
+        
+        query = '''
+            SELECT file_id, file_name
+            FROM user_files
+            WHERE user_id = (SELECT user_id FROM users WHERE username = ?)
+        '''
+        cursor.execute(query, (username,))
+        
+        files_with_ids = [{'id': row['file_id'], 'filename': row['file_name']} for row in cursor.fetchall()]
+
+        return files_with_ids
+
+    finally:
+        pass
+
+
+def _get_user_id(username: str,app) -> int:
     """Pobierz id użytkownika na podstawie jego unikalnej nazwy.
 
     :param username: nazwa użytkownika.
-    :param conn: aktualne połączenie do bazy danych.
     """
-    cursor = conn.cursor()
-    query = 'SELECT user_id FROM users WHERE username = ?'
-    cursor.execute(query, (username))
-    user_id = cursor.fetchone()
-
-    return user_id
+    try:
+        conn = get_db(app)
+        cursor = conn.cursor()
+        query = 'SELECT user_id FROM users WHERE username = ?'
+        cursor.execute(query, (username))
+        user_id = cursor.fetchone()
+        return user_id
+    finally:
+        conn.close()
 
 def _send_record_to_db_exapmle(app : Flask):
     '''Przykladowa funkcja do wysylania danych do bazy danych'''

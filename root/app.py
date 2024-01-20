@@ -30,16 +30,6 @@ app.config['DEFAULT_SAVE_SLOTS_NUMBER'] = os.getenv("DEFAULT_SAVE_SLOTS_NUMBER")
 
 
 # ------- Trasy (Routes) -------
-import os
-from flask import Flask, flash, url_for, render_template, redirect, g, request, session
-from dotenv import load_dotenv
-
-# Wewnetrzne biblioteki
-from modules.db_utils import *
-from modules.session_manager import UserPass
-from pages.menu import Menu
-
-
 @app.route('/')
 def index():
     return render_template('templates/index.html', active_navbar_part='index', logged=check_if_logged())
@@ -110,7 +100,10 @@ def files():
     if check_if_logged() == False:
         return redirect(url_for('index'))
 
-    return render_template('templates/files.html', active_navbar_part='files', logged=check_if_logged())
+    username = session['user']
+    files_with_ids = get_files_with_ids(username=username, app=app)
+
+    return render_template('templates/files.html', active_navbar_part='files', logged=check_if_logged(), files=files_with_ids)
 
 @app.route('/write')
 def new_post():
@@ -127,16 +120,16 @@ def editor():
 
     return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged())
 
-@app.route('/editor')
-def editor():
-    # Zabezpieczenie przed próbą połączenia się przez wpisanie adresu
-    if check_if_logged() == False:
-        return redirect(url_for('index'))
+# @app.route('/editor')
+# def editor():
+#     # Zabezpieczenie przed próbą połączenia się przez wpisanie adresu
+#     if check_if_logged() == False:
+#         return redirect(url_for('index'))
 
-    file_id = 1  # Załóżmy, że chcesz edytować plik o identyfikatorze 1
-    file_content = get_file_content_by_id(file_id)
+#     file_id = 1  # Załóżmy, że chcesz edytować plik o identyfikatorze 1
+#     file_content = get_file_content_by_id(file_id)
 
-    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(), file_content=file_content)
+#     return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(), file_content=file_content)
 
 @app.route('/logout')
 def logout():
@@ -146,7 +139,9 @@ def logout():
     return redirect(url_for('index'))
     #return render_template('templates/index.html', active_navbar_part='index', logged=check_if_logged())
 
-# ------- Baza Danych -------
+# __________________________________________________
+#             ------- Baza Danych -------
+# __________________________________________________
 
 @app.teardown_appcontext
 def close_db(error):
@@ -155,7 +150,9 @@ def close_db(error):
     if hasattr(g, 'db'):
         g.db.close()
 
-# ------- Pozostale -------
+# __________________________________________________
+#             ------- Pozostale -------
+# __________________________________________________
 
 def check_if_logged():
     if 'user' in session:
