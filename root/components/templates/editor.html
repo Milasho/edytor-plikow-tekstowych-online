@@ -1,41 +1,35 @@
-{% from "macros/macros.html" import show_all_flash_messages %}
-
-<!-- Dziedziczenia stron -->
-{% extends "templates/base.html" %}
-
-<!-- Wypelnienie tytulu-->
-{% block title %}
-Logowanie do edytora
-{% endblock %}
-
-{% block content %}
 <script src="{{url_for('static', filename='js/ckeditor/ckeditor.js')}}"></script>
-<form method="post">
-    <!-- Miejsce na treść pobraną z bazy danych -->
+<form method="post" action="{{ url_for('save_changes') }}">
+    <!-- Pole wyboru nazwy pliku, jeśli dostępne sloty są większe niż 0 -->
+    {% if available_slots > 0 %}
+        <label for="file_name">Wybierz nazwę pliku:</label>
+        <select name="file_name" id="file_name">
+            {% for slot in range(1, available_slots + 1) %}
+                <option value="file{{ slot }}">file{{ slot }}</option>
+            {% endfor %}
+        </select>
+    {% endif %}
+
+    <!-- Dane z bazy danych wczytane do edytora -->
     <textarea name="ckeditor" id="ckeditor" rows="10" cols="80">
-        {{ file_content }}
+        {{ file_binary_content|safe }}
     </textarea>
+
+    <!-- Ukryte pole dla nazwy pliku, jeśli jest dostępne -->
+    {% if available_slots > 0 %}
+        <input type="hidden" name="file_name" value="">
+    {% endif %}
 
     <!-- Skrypt CKEditor -->
     <script>
-        // Pobierz treść z bazy danych (możesz użyć wstawiania kodu w Pythonie)
-        var contentFromDatabase = "{{ file_content }}";
+        // Pobierz treść z bazy danych
+        var contentFromDatabase = "{{ file_binary_content|safe }}";
 
-        // Zastąp <textarea> CKEditorem
         CKEDITOR.replace('ckeditor', {
-            // Konfiguracja CKEditor, jeśli potrzebujesz
+            // Konfiguracja CKEditor
         }).setData(contentFromDatabase); // Ustawienie danych z bazy danych
     </script>
 
     <!-- Przycisk submit -->
-    <input type="Zapisz">
+    <input type="submit" value="Zapisz zmiany">
 </form>
-
-<!-- Importuj CKEditor -->
-<script src="{{url_for('static', filename='js/ckeditor/ckeditor.js')}}"></script>
-
-
-<div class="container">
-buttony goes here
-</div>
-{% endblock %} 

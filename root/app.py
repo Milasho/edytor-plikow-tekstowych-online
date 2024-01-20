@@ -2,7 +2,8 @@
 # Zewnetrzne biblioteki
 import sqlite3
 import os
-from flask import Flask, flash, url_for, render_template, redirect, g, request, session
+import io
+from flask import Flask, flash, url_for, render_template, redirect, send_file, g, request, session
 from flask_ckeditor import CKEditor
 from dotenv import load_dotenv
 
@@ -22,7 +23,6 @@ load_dotenv()   # Wczytanie zmiennych srodowiskowych z .env
 app.config['SECRET_KEY'] =  os.getenv("SECRET_KEY")    # Pobranie klucza z tajnego miejsca
 app.config['DATABASE'] =  os.getenv("DB_PATH")
 app.config['DEFAULT_SAVE_SLOTS_NUMBER'] = os.getenv("DEFAULT_SAVE_SLOTS_NUMBER")  
-
 
 # __________________________________________________
 #             ------- Kod Glowny -------
@@ -105,31 +105,50 @@ def files():
 
     return render_template('templates/files.html', active_navbar_part='files', logged=check_if_logged(), files=files_with_ids)
 
-@app.route('/write')
-def new_post():
-    if request.method == 'POST':
-        data = request.form.get('ckeditor')  # <--
+@app.route('/save_changes', methods=['POST'])
+def save_changes():
+    # Pobierz nazwę pliku z formularza
+    file_name = request.form['file_name']
 
-    return render_template('index.html')
+    # Pobierz treść przesłaną z formularza CKEditor
+    new_content = request.form['ckeditor']
+
+    # Tutaj dokonaj przekształcenia i zapisu do bazy danych
+    file_id = save_content_to_database(new_content, file_name, get_current_user_id(), app)
+
+    # Przekieruj użytkownika gdzieś, gdzie powinien być po zapisie (np. do strony z plikami)
+    return redirect(url_for('files'))
+
+@app.route('/download_file/<int:file_id>')
+def download_file(file_id, app=app):
+    # TODO: poprawic nazwe pliku
+    # Pobierz zawartość pliku z bazy danych na podstawie ID
+    file_content = get_file_content_by_id(file_id, app=app)
+
+    # Wygeneruj nazwę pliku
+    file_name = f'file_{file_id}.txt'  # Możesz dostosować nazwę pliku według potrzeb
+
+    # Przygotuj plik do pobrania
+    output = io.BytesIO(file_content)
+    return send_file(output, as_attachment=True, download_name=file_name, mimetype='text/plain')
     
 @app.route('/editor')
 def editor():
-    # Zabezpieczenie przed proba polaczenia sie przez wpisanie adresu
+     # zabezpieczenie przed próbą połączenia się przez wpisanie adresu
     if check_if_logged() == False:
-        return redirect(url_for('index'))
+         return redirect(url_for('index'))
 
-    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged())
+    file_id = 1  # FIXME: poprawic wartosc
+    file_content = get_file_content_by_id(file_id=file_id, app=app)
+    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(), file_content=file_content)
 
-# @app.route('/editor')
-# def editor():
-#     # Zabezpieczenie przed próbą połączenia się przez wpisanie adresu
-#     if check_if_logged() == False:
-#         return redirect(url_for('index'))
+@app.route('/edit_file/<int:file_id>')
+def edit_file(file_id):
+    # Pobierz dane binarne z bazy danych
+    file_binary_content = get_file_content_by_id(file_id=file_id, app=app)
 
-#     file_id = 1  # Załóżmy, że chcesz edytować plik o identyfikatorze 1
-#     file_content = get_file_content_by_id(file_id)
-
-#     return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(), file_content=file_content)
+    # Przekieruj do strony editor.html
+    return render_template('editor.html', file_binary_content=file_binary_content)
 
 @app.route('/logout')
 def logout():
@@ -159,6 +178,13 @@ def check_if_logged():
         return True
     else:
         return False
+
+def get_current_user_id():
+    if 'user' in session:
+        return get_user_id(session['user'], app=app)
+    else:
+        raise ValueError('Brak użytkownika w sesji')
+
 
 # Kompatybilnosc z uruchomieniem przez Python
 if __name__ == '__main__':
