@@ -26,15 +26,44 @@ def get_file_content_by_id(file_id):
         conn.close()
 
 def get_file_id(username: str, slot_id: int) -> int:
-    """Uzyskaj id pliku z bazy danych na podstawie unikalnej nazwy uzytkownika,
-    oraz numeru slotu.
+    """Uzyskaj id pliku z bazy danych na podstawie identyfikatora użytkownika i numeru slotu.
 
-    :param username: nazwa uzytkownika.
-    :param filename: the filename of uploaded image, optional.
-    :param message: the warning message displayed to the user, optional.
+    :param username: nazwa użytkownika.
+    :param file_name: nazwa pliku.
+    :param slot_id: numer slotu z plikiem użytkownika (pomiędzy 1-5).
     """
-    pass
 
+    if username is None or not (1 <= slot_id <= 5):
+        raise ValueError('Nieprawidłowe parametry')
+
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+
+        user_id = _get_user_id(username=username, conn=conn)
+        query = 'SELECT file_id FROM user_files WHERE user_id = ? AND slot_id = ?'
+        cursor.execute(query, (user_id, slot_id))
+
+        result = cursor.fetchone()
+        file_id = result[0] if result else None  # Zwróć id pliku lub None, jeśli nie znaleziono
+
+        return file_id
+
+    finally:
+        conn.close()
+
+def _get_user_id(username: str, conn: g.db) -> int:
+    """Pobierz id użytkownika na podstawie jego unikalnej nazwy.
+
+    :param username: nazwa użytkownika.
+    :param conn: aktualne połączenie do bazy danych.
+    """
+    cursor = conn.cursor()
+    query = 'SELECT user_id FROM users WHERE username = ?'
+    cursor.execute(query, (username))
+    user_id = cursor.fetchone()
+
+    return user_id
 
 def _send_record_to_db_exapmle(app : Flask):
     '''Przykladowa funkcja do wysylania danych do bazy danych'''
