@@ -118,10 +118,12 @@ def save_changes():
 
     if file_id is not None:
         # Plik istnieje, więc zaktualizuj jego treść
-        update_content_in_database(new_content, file_id, app)
+        update_content_in_database(content=new_content, file_id=file_id, app=app)
     else:
         # Plik nie istnieje, więc utwórz nowy wpis
         file_id = save_content_to_database(user_id=get_user_id(username, app),  file_name=file_name, content=new_content, app=app)
+
+    flash('Zapisano zmiany.')
 
     # Przekieruj użytkownika gdzieś, gdzie powinien być po zapisie (np. do strony z plikami)
     return redirect(url_for('files'))
