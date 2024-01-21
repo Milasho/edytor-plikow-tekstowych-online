@@ -21,16 +21,22 @@
 
     <!-- Skrypt CKEditor -->
     <script>
-        // Pobierz treść z bazy danych
-        var contentFromDatabase = "{{ file_binary_content|safe }}";
-
-        // Stwórz pusty obiekt, jeśli treść jest równa 'None'
-        contentFromDatabase = contentFromDatabase === 'None' ? '' : contentFromDatabase;
-
-        CKEDITOR.replace('ckeditor', {
-            // Konfiguracja CKEditor
-        }).setData(contentFromDatabase); // Ustawienie danych z bazy danych
+        document.addEventListener('DOMContentLoaded', function () {
+            // Pobierz treść z bazy danych
+            var contentFromDatabase = "{{ file_binary_content|safe }}";
+    
+            // Stwórz pusty obiekt, jeśli treść jest równa 'None'
+            contentFromDatabase = contentFromDatabase === 'None' ? '' : contentFromDatabase;
+    
+            // Sprawdź, czy CKEditor jest dostępny
+            if (typeof CKEDITOR !== 'undefined') {
+                CKEDITOR.replace('ckeditor', {
+                    // Konfiguracja CKEditor
+                }).setData(contentFromDatabase); // Ustawienie danych z bazy danych
+            }
+        });
     </script>
+    
 
     <!-- Przycisk submit -->
     <input type="submit" value="Zapisz zmiany">

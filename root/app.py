@@ -118,7 +118,7 @@ def save_changes():
 
     if file_id is not None:
         # Plik istnieje, więc zaktualizuj jego treść
-        update_content_in_database(new_content, file_id)
+        update_content_in_database(new_content, file_id, app)
     else:
         # Plik nie istnieje, więc utwórz nowy wpis
         file_id = save_content_to_database(user_id=get_user_id(username, app),  file_name=file_name, content=new_content, app=app)
@@ -141,29 +141,53 @@ def download_file(file_id, app=app):
     output = io.BytesIO(file_content.encode('utf-8'))
     return send_file(output, as_attachment=True, download_name=file_name, mimetype='text/plain')
     
+# ...
+
 @app.route('/editor')
 def editor():
-     # zabezpieczenie przed próbą połączenia się przez wpisanie adresu
     if check_if_logged() == False:
-         return redirect(url_for('index'))
+        return redirect(url_for('index'))
 
-    #file_id = 1  # FIXME: poprawic wartosc
-    #file_content = get_file_content_by_id(file_id=file_id, app=app)
-    #get_db(app)
-    user_id=get_user_id(username=session['user'], app=app)
+    user_id = get_user_id(username=session['user'], app=app)
     available_slots = get_available_slots(user_id=user_id, app=app)
-    
-    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(), file_content=None, available_slots=available_slots)
+
+    # Pobierz file_id z parametrów URL
+    file_id = request.args.get('file_id')
+
+    if file_id:
+        # Pobierz zawartość aktualnie edytowanego pliku
+        file_binary_content = get_file_content_by_id(file_id=int(file_id), app=app)
+        file_name = get_file_name_by_id(int(file_id), app)
+    else:
+        file_binary_content = None
+        file_name = None
+
+    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(),
+                           file_content=None, available_slots=available_slots, file_binary_content=file_binary_content,
+                           file_name=file_name)
 
 @app.route('/edit_file/<int:file_id>')
 def edit_file(file_id):
-    username = session['user']
-    user_id = get_user_id(username, app)
-    # Pobierz dane binarne z bazy danych
-    file_binary_content = get_file_content_by_id(file_id=file_id, app=app)
+    if check_if_logged() == False:
+        return redirect(url_for('index'))
 
+    user_id = get_user_id(username=session['user'], app=app)
+    available_slots = get_available_slots(user_id=user_id, app=app)
+
+    if file_id:
+        # Pobierz zawartość aktualnie edytowanego pliku
+        file_binary_content = get_file_content_by_id(file_id=int(file_id), app=app)
+        file_name = get_file_name_by_id(int(file_id), app)
+    else:
+        file_binary_content = None
+        file_name = None
+    
     # Przekieruj do strony editor.html
-    return render_template('templates/editor.html', file_name=get_file_name_by_id(file_id, app), file_binary_content=file_binary_content, available_slots=get_available_slots(user_id, app), active_navbar_part='edit_file', file_id=file_id, logged=check_if_logged())
+    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(),
+                            available_slots=available_slots, file_binary_content=file_binary_content,
+                           file_name=file_name, file_id=file_id)
+
+
 
 @app.route('/logout')
 def logout():

@@ -83,12 +83,13 @@ def save_content_to_database(user_id, file_name, content, app):
     finally:
         pass
 
-def update_content_in_database(file_id, new_content, app):
+def update_content_in_database(file_id, content, app):
     '''Aktualizuje treść pliku w bazie danych na podstawie ID pliku.'''
     try:
+        print("DSFIJFUHDSFIUHDSFHUDSFH")
         conn = get_db(app)
         cursor = conn.cursor()
-        cursor.execute('UPDATE user_files SET content = ? WHERE file_id = ?', (new_content, file_id))
+        cursor.execute('UPDATE user_files SET content = ? WHERE file_id = ?', (content, file_id))
         conn.commit()
     finally:
         pass
