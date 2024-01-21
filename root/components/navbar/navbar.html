@@ -19,7 +19,7 @@
                     <a class="nav-link {{ 'active' if active_navbar_part=='register' }}" {% if logged %}style="display: none;"{% endif %} href="{{ url_for('register') }}">Rejestracja</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ 'active' if active_navbar_part=='editor' }}" {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('editor') }}">Edytor</a>
+                    <a class="nav-link {{ 'active' if active_navbar_part=='editor' }}" {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('edit_file', file_id=0) }}">Edytor</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ 'active' if active_navbar_part=='files' }}" {% if not logged %}style="display: none;"{% endif %} href="{{ url_for('files') }}">Pliki</a>

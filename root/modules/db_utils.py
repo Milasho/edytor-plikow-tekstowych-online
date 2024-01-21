@@ -74,23 +74,9 @@ def save_content_to_database(user_id, file_name, content, app):
     try:
         conn = get_db(app)
         cursor = conn.cursor()
+        #content_text = content.encode('utf-8')
 
-        # Pobierz treść pliku z bazy danych
-        file_content_row = cursor.fetchone()
-
-        # Sprawdź, czy wynik zapytania nie jest pusty (None)
-        if file_content_row is not None:
-            file_content_bytes = file_content_row['content']
-
-            # Dekoduj dane binarne na ciąg tekstowy
-            content_text = file_content_bytes.decode('utf-8')
-
-            # Teraz możesz użyć file_content_text w swojej aplikacji
-        else:
-            # Obsługa sytuacji, gdy wynik zapytania jest pusty
-            content_text = ""
-
-        cursor.execute('INSERT INTO user_files (user_id, file_name, content) VALUES (?, ?, ?)', (user_id, file_name, content_text))
+        cursor.execute('INSERT INTO user_files (user_id, file_name, content) VALUES (?, ?, ?)', (user_id, file_name, content))
         file_id = cursor.lastrowid  # Pobierz identyfikator nowo dodanego pliku
         conn.commit()
         return file_id
@@ -119,14 +105,6 @@ def get_user_id(username: str, app: Flask) -> int:
         cursor.execute(query, (username,))
         user_id_row = cursor.fetchone()
         conn.commit()
-
-        print(username)
-        print(username)
-        print(username)
-        print(username)
-        print(username)
-        print(username)
-        print(username)
         if user_id_row is not None:
             user_id = user_id_row[0]  # Indeks 0, aby uzyskać pierwszą kolumnę (user_id)
             return int(user_id)

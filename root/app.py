@@ -157,11 +157,13 @@ def editor():
 
 @app.route('/edit_file/<int:file_id>')
 def edit_file(file_id):
+    username = session['user']
+    user_id = get_user_id(username, app)
     # Pobierz dane binarne z bazy danych
     file_binary_content = get_file_content_by_id(file_id=file_id, app=app)
 
     # Przekieruj do strony editor.html
-    return render_template('editor.html', file_binary_content=file_binary_content)
+    return render_template('templates/editor.html', file_name=get_file_name_by_id(file_id, app), file_binary_content=file_binary_content, available_slots=get_available_slots(user_id, app), active_navbar_part='edit_file', file_id=file_id, logged=check_if_logged())
 
 @app.route('/logout')
 def logout():
