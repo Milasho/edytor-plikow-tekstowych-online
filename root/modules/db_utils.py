@@ -181,6 +181,45 @@ def user_is_owner(file_id, user_id, app):
     finally:
         pass
 
+def get_available_tokens(user_id, app):
+    try:
+        conn = get_db(app)
+        cursor = conn.cursor()
+        cursor.execute('SELECT available_slots FROM users WHERE user_id = ?', (user_id,))
+        result = cursor.fetchone()
+
+        if result:
+            return result[0]  
+        else:
+            return None  
+    finally:
+        pass
+
+
+def decrease_available_tokens(user_id, amount, app):
+    try:
+        conn = get_db(app)
+        cursor = conn.cursor()
+        cursor.execute('SELECT available_slots FROM users WHERE user_id = ?', (user_id,))
+        result = cursor.fetchone()
+
+        if result:
+            available_slots = result[0]
+            
+            if available_slots >= amount:
+                # Pomniejsz ilość dostępnych tokenów użytkownika
+                cursor.execute('UPDATE users SET available_slots = ? WHERE user_id = ?', (available_slots - amount, user_id))
+                
+                conn.commit()
+                return True  
+            else:
+                return False  
+        else:
+            return False  # Obsługa sytuacji, gdy nie można pobrać ilości dostępnych tokenów użytkownika
+    finally:
+        pass
+
+
 # def delete_file_from_database(file_id, app):
 #     try:
 #         conn = get_db(app)
@@ -198,15 +237,15 @@ def delete_file_from_database(file_id, user_id, app):
         cursor = conn.cursor()
 
         # Pobierz ilość dostępnych tokenów użytkownika
-        cursor.execute('SELECT available_slots FROM users WHERE id = ?', (user_id,))
+        cursor.execute('SELECT available_slots FROM users WHERE user_id = ?', (user_id,))
         result = cursor.fetchone()
 
         if result:
             available_slots = result[0]
             # Zabezpieczenie przed wieksza iloscia niz powinien miec w tym miejscu
             if available_slots < 5:
-                cursor.execute('DELETE FROM user_files WHERE id = ?', (file_id,))
-                cursor.execute('UPDATE users SET available_slots = ? WHERE id = ?', (available_slots + 1, user_id))
+                cursor.execute('DELETE FROM user_files WHERE file_id = ?', (file_id,))
+                cursor.execute('UPDATE users SET available_slots = ? WHERE user_id = ?', (available_slots + 1, user_id))
                 
                 conn.commit()
         else:

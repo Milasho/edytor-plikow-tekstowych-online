@@ -39,11 +39,15 @@
                         (Wolne)
                     </td>
                     <td>
-                        <label class="btn btn-primary btn-sm">
-                            Prześlij
-                            <input type="file" style="display: none;">
-                        </label>
-                    </td>
+                        <form method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+                            <div class="input-group">
+                                <label class="btn btn-primary btn-sm mr-2">
+                                    <input type="file" name="file" style="display: inside;">
+                                </label>
+                                <button type="submit" class="btn btn-primary btn-sm">Prześlij</button>
+                            </div>
+                        </form>
+                    </td>                                 
                 </tr>
             {% endfor %}
         </tbody>

@@ -132,10 +132,10 @@ def download_file(file_id, app=app):
     # Pobierz zawartość pliku z bazy danych na podstawie ID
 
     file_content = get_file_content_by_id(file_id, app=app)
-    print(file_content)
+    original_filename = get_file_name_by_id(file_id=file_id, app=app)
 
     # Wygeneruj nazwę pliku
-    file_name = f'file_{file_id}.txt'  # Możesz dostosować nazwę pliku według potrzeb
+    file_name = f'{original_filename}.txt' 
 
     # Przygotuj plik do pobrania
     output = io.BytesIO(file_content.encode('utf-8'))
@@ -149,7 +149,7 @@ def delete_file(file_id):
 
     if is_owner:
         # Usuń plik z bazy danych
-        delete_file_from_database(file_id, app=app)
+        delete_file_from_database(file_id=file_id, user_id=user_id, app=app)
         
         # Przekieruj użytkownika na stronę z plikami po usunięciu
         return redirect(url_for('files'))
@@ -158,6 +158,41 @@ def delete_file(file_id):
         flash('Nie masz uprawnień do usunięcia tego pliku.')
         return None
         #return redirect(url_for('files'))
+
+@app.route('/upload_file', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        flash('Brak pliku do przesłania', 'error')
+        return redirect(request.referrer)
+
+    file = request.files['file']
+
+    if file.filename == '':
+        flash('Brak nazwy pliku', 'error')
+        return redirect(request.referrer)
+    
+    # TODO: Obsluga rozszerzen
+    file_name, file_extension = os.path.splitext(file.filename)
+
+    user_id = get_user_id(username=session['user'], app=app)
+    available_tokens = get_available_tokens(user_id, app)
+    # FIXME: Poprawic jednolitosc nazewnictwa slots/tokens
+
+    # Sprawdź, czy użytkownik ma wystarczającą liczbę dostępnych tokenów
+    if available_tokens > 0:
+        content = file.read().decode('utf-8')
+
+        # TODO: Zabezpieczenie file_name = secure_filename(file.filename)
+        save_content_to_database(user_id, file_name, content, app)
+
+        # FIXME : patrz w utils mechanizm odejmowania tokenow
+        #decrease_available_tokens(user_id, 1, app)
+
+        flash('Plik przesłano pomyślnie', 'success')
+    else:
+        flash('Brak wystarczającej liczby slotów do zapisania pliku.', 'error')
+
+    return redirect(request.referrer)
     
 # ...
 

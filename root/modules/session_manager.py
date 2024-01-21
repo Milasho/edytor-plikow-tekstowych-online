@@ -18,7 +18,7 @@ class UserPass:
       self.username = user
       self.password = password
       self.email = email
-      self.avaliable_slots = slots
+      self.available_slots = slots
 
    def verify_password(self, stored_password, provided_password):
       '''Sprawdza poprawnosc hasla uzytkownika'''
@@ -56,7 +56,7 @@ class UserPass:
    def login_user(self):
       '''Wykonaj probe zalogowania uzytkownika'''
       db = get_db(self.app)
-      sql_statement = 'select user_id, username, email, password, avaliable_slots from users where username=?'
+      sql_statement = 'select user_id, username, email, password, available_slots from users where username=?'
       cur = db.execute(sql_statement, [self.username])
       user_record = cur.fetchone()
 
@@ -73,7 +73,7 @@ class UserPass:
          # Sprawdzamy, czy użytkownik o podanej nazwie już istnieje
          db = get_db(self.app)
 
-         check_user_sql = 'SELECT user_id, username, password, email, avaliable_slots FROM users WHERE username=? OR email=?'
+         check_user_sql = 'SELECT user_id, username, password, email, available_slots FROM users WHERE username=? OR email=?'
          existing_user = db.execute(check_user_sql, [self.username, self.email]).fetchone()
 
          if existing_user:
@@ -82,12 +82,12 @@ class UserPass:
 
          # Wstawiamy nowego użytkownika do bazy danych
          hashed_password = self.hash_password()
-         insert_user_sql = 'INSERT INTO users (username, password, email, avaliable_slots) VALUES (?, ?, ?, ?)'
-         db.execute(insert_user_sql, [self.username, hashed_password, self.email, self.avaliable_slots])
+         insert_user_sql = 'INSERT INTO users (username, password, email, available_slots) VALUES (?, ?, ?, ?)'
+         db.execute(insert_user_sql, [self.username, hashed_password, self.email, self.available_slots])
          db.commit()
 
          # Pobieramy zarejestrowanego użytkownika
-         registered_user_sql = 'SELECT user_id, username, password, email, avaliable_slots FROM users WHERE username=?'
+         registered_user_sql = 'SELECT user_id, username, password, email, available_slots FROM users WHERE username=?'
          user_record = db.execute(registered_user_sql, [self.username]).fetchone()
 
          return user_record
