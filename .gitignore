@@ -7,5 +7,6 @@
 
 # Pozostale
 *.vscode
+/root/venv
 *__pycache__
 

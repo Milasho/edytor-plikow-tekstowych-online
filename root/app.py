@@ -2,7 +2,9 @@
 # Zewnetrzne biblioteki
 import sqlite3
 import os
-from flask import Flask, flash, url_for, render_template, redirect, g, request, session
+import io
+from flask import Flask, flash, url_for, render_template, redirect, send_file, g, request, session
+from flask_ckeditor import CKEditor
 from dotenv import load_dotenv
 
 # Wewnetrzne biblioteki
@@ -13,6 +15,7 @@ from pages.menu import Menu
 
 # ------- Inicjalizacja Modulow -------
 app = Flask(__name__, template_folder='components')   # Instancja aplikacji Flask
+ckeditor = CKEditor(app)  # Instancja edytora tekstowego
 
 
 # ------- Konfiguracja -------
@@ -21,14 +24,12 @@ app.config['SECRET_KEY'] =  os.getenv("SECRET_KEY")    # Pobranie klucza z tajne
 app.config['DATABASE'] =  os.getenv("DB_PATH")
 app.config['DEFAULT_SAVE_SLOTS_NUMBER'] = os.getenv("DEFAULT_SAVE_SLOTS_NUMBER")  
 
-
 # __________________________________________________
 #             ------- Kod Glowny -------
 # __________________________________________________
 
 
 # ------- Trasy (Routes) -------
-
 @app.route('/')
 def index():
     return render_template('templates/index.html', active_navbar_part='index', logged=check_if_logged())
@@ -91,8 +92,102 @@ def register():
             return redirect(url_for('index'))
         else:
             flash('Rejestracja nie powiodła się, użytkownik o takim loginie bądź adresie e-mail już istnieje.')
-            flash(user_email)
             return render_template('templates/register.html', active_navbar_part='register')
+
+@app.route('/files')
+def files():
+    # FIXME: Dodac zaleznosc od user_id a nie od username
+
+    # Zabezpieczenie przed proba polaczenia sie przez wpisanie adresu
+    if check_if_logged() == False:
+        return redirect(url_for('index'))
+
+    username = session['user']
+    files_with_ids = get_files_with_ids(username=username, app=app)
+
+    return render_template('templates/files.html', active_navbar_part='files', logged=check_if_logged(), files=files_with_ids, get_file_content_by_id=get_file_content_by_id)
+
+@app.route('/save_changes', methods=['POST'])
+def save_changes():
+    file_name = request.form['file_name']
+    new_content = request.form['ckeditor']
+    username = session['user']
+
+    # Sprawdź, czy plik o danej nazwie już istnieje w bazie danych
+    file_id = get_file_id(username, file_name, app)
+
+    if file_id is not None:
+        # Plik istnieje, więc zaktualizuj jego treść
+        update_content_in_database(new_content, file_id, app)
+    else:
+        # Plik nie istnieje, więc utwórz nowy wpis
+        file_id = save_content_to_database(user_id=get_user_id(username, app),  file_name=file_name, content=new_content, app=app)
+
+    # Przekieruj użytkownika gdzieś, gdzie powinien być po zapisie (np. do strony z plikami)
+    return redirect(url_for('files'))
+
+@app.route('/download_file/<int:file_id>')
+def download_file(file_id, app=app):
+    # TODO: poprawic nazwe pliku
+    # Pobierz zawartość pliku z bazy danych na podstawie ID
+
+    file_content = get_file_content_by_id(file_id, app=app)
+    print(file_content)
+
+    # Wygeneruj nazwę pliku
+    file_name = f'file_{file_id}.txt'  # Możesz dostosować nazwę pliku według potrzeb
+
+    # Przygotuj plik do pobrania
+    output = io.BytesIO(file_content.encode('utf-8'))
+    return send_file(output, as_attachment=True, download_name=file_name, mimetype='text/plain')
+    
+# ...
+
+@app.route('/editor')
+def editor():
+    if check_if_logged() == False:
+        return redirect(url_for('index'))
+
+    user_id = get_user_id(username=session['user'], app=app)
+    available_slots = get_available_slots(user_id=user_id, app=app)
+
+    # Pobierz file_id z parametrów URL
+    file_id = request.args.get('file_id')
+
+    if file_id:
+        # Pobierz zawartość aktualnie edytowanego pliku
+        file_binary_content = get_file_content_by_id(file_id=int(file_id), app=app)
+        file_name = get_file_name_by_id(int(file_id), app)
+    else:
+        file_binary_content = None
+        file_name = None
+
+    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(),
+                           file_content=None, available_slots=available_slots, file_binary_content=file_binary_content,
+                           file_name=file_name)
+
+@app.route('/edit_file/<int:file_id>')
+def edit_file(file_id):
+    if check_if_logged() == False:
+        return redirect(url_for('index'))
+
+    user_id = get_user_id(username=session['user'], app=app)
+    available_slots = get_available_slots(user_id=user_id, app=app)
+
+    if file_id:
+        # Pobierz zawartość aktualnie edytowanego pliku
+        file_binary_content = get_file_content_by_id(file_id=int(file_id), app=app)
+        file_name = get_file_name_by_id(int(file_id), app)
+    else:
+        file_binary_content = None
+        file_name = None
+    
+    # Przekieruj do strony editor.html
+    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(),
+                            available_slots=available_slots, file_binary_content=file_binary_content,
+                           file_name=file_name, file_id=file_id)
+
+
 
 @app.route('/logout')
 def logout():
@@ -102,7 +197,9 @@ def logout():
     return redirect(url_for('index'))
     #return render_template('templates/index.html', active_navbar_part='index', logged=check_if_logged())
 
-# ------- Baza Danych -------
+# __________________________________________________
+#             ------- Baza Danych -------
+# __________________________________________________
 
 @app.teardown_appcontext
 def close_db(error):
@@ -111,7 +208,9 @@ def close_db(error):
     if hasattr(g, 'db'):
         g.db.close()
 
-# ------- Pozostale -------
+# __________________________________________________
+#             ------- Pozostale -------
+# __________________________________________________
 
 def check_if_logged():
     if 'user' in session:
