@@ -138,7 +138,7 @@ def download_file(file_id, app=app):
     file_name = f'file_{file_id}.txt'  # Możesz dostosować nazwę pliku według potrzeb
 
     # Przygotuj plik do pobrania
-    output = io.BytesIO(file_content.encode('utf-8'))
+    output = io.BytesIO(file_content)
     return send_file(output, as_attachment=True, download_name=file_name, mimetype='text/plain')
     
 # ...
