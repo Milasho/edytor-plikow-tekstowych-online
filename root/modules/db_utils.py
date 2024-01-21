@@ -138,6 +138,33 @@ def get_file_name_by_id(file_id, app: Flask):
     file_name = cursor.fetchone()
     return file_name[0] if file_name else None
 
+def user_is_owner(file_id, user_id, app):
+    try:
+        conn = get_db(app)
+        cursor = conn.cursor()
+
+        # Sprawdz czy użytkownik jest właścicielem pliku
+        cursor.execute('SELECT user_id FROM user_files WHERE file_id = ?', (file_id,))
+        result = cursor.fetchone()
+
+        if result and result[0] == user_id:
+            return True
+        else:
+            return False
+    finally:
+        pass
+
+def delete_file_from_database(file_id, app):
+    try:
+        conn = get_db(app)
+        cursor = conn.cursor()
+
+        # Usuń plik z bazy danych
+        cursor.execute('DELETE FROM user_files WHERE file_id = ?', (file_id,))
+        conn.commit()
+    finally:
+        pass
+
 
 def _send_record_to_db_exapmle(app : Flask):
     '''Przykladowa funkcja do wysylania danych do bazy danych'''

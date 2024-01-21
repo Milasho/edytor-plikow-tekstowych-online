@@ -29,7 +29,7 @@
                             Edytuj 
                         </a>
                         <a href="{{ url_for('download_file', file_id=file.id) }}" class="btn btn-success btn-sm">Pobierz</a>
-                        <label class="btn btn-danger btn-sm">Usuń</label>
+                        <a href="{{ url_for('delete_file', file_id=file.id) }}" class="btn btn-danger btn-sm">Usuń</a>
                     </td>
                 </tr>
             {% endfor %}

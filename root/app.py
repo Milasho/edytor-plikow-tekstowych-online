@@ -138,8 +138,25 @@ def download_file(file_id, app=app):
     file_name = f'file_{file_id}.txt'  # Możesz dostosować nazwę pliku według potrzeb
 
     # Przygotuj plik do pobrania
-    output = io.BytesIO(file_content)
+    output = io.BytesIO(file_content.encode('utf-8'))
     return send_file(output, as_attachment=True, download_name=file_name, mimetype='text/plain')
+
+@app.route('/delete_file/<int:file_id>')
+def delete_file(file_id):
+    user_id = get_user_id(username=session['user'], app=app)
+
+    is_owner = user_is_owner(file_id, user_id, app=app)
+
+    if is_owner:
+        # Usuń plik z bazy danych
+        delete_file_from_database(file_id, app=app)
+        
+        # Przekieruj użytkownika na stronę z plikami po usunięciu
+        return redirect(url_for('files'))
+    else:
+        # Użytkownik nie jest właścicielem pliku -
+        flash('Nie masz uprawnień do usunięcia tego pliku.')
+        #return redirect(url_for('files'))
     
 # ...
 
