@@ -17,7 +17,7 @@
     {% endif %}
 
     <!-- Dane z bazy danych wczytane do edytora -->
-    <textarea name="ckeditor" id="ckeditor" rows="10" cols="80">{{ file_binary_content|safe }}</textarea>
+    <textarea name="ckeditor" id="ckeditor" class="ckeditor" rows="10" cols="80">{{ file_binary_content|safe }}</textarea>
 
     <!-- Skrypt CKEditor -->
     <script>
@@ -27,21 +27,13 @@
         // Stwórz pusty obiekt, jeśli treść jest równa 'None'
         contentFromDatabase = contentFromDatabase === 'None' ? '' : contentFromDatabase;
 
-        CKEDITOR.replace('ckeditor', {
-            // Konfiguracja CKEditor
-        }).setData(contentFromDatabase); // Ustawienie danych z bazy danych
+        CKEDITOR.replace('ckeditor').setData(contentFromDatabase); // Ustawienie danych z bazy danych
     </script>
 
     <!-- Przycisk submit -->
     <input type="submit" value="Zapisz zmiany">
 
-    <!-- Ukryte pole dla nazwy pliku, jeśli jest dostępne -->
-    {% if available_slots > 0 %}
-        <input type="hidden" name="file_name" value="{{ file_name }}">
-    {% endif %}
 
-    <!-- Ukryte pole dla file_id -->
-    <input type="hidden" name="file_id" value="{{ file_id }}">
 </form>
 
 {% endblock %}
