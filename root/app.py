@@ -96,6 +96,8 @@ def register():
 
 @app.route('/files')
 def files():
+    # FIXME: Dodac zaleznosc od user_id a nie od username
+
     # Zabezpieczenie przed proba polaczenia sie przez wpisanie adresu
     if check_if_logged() == False:
         return redirect(url_for('index'))
@@ -103,18 +105,23 @@ def files():
     username = session['user']
     files_with_ids = get_files_with_ids(username=username, app=app)
 
-    return render_template('templates/files.html', active_navbar_part='files', logged=check_if_logged(), files=files_with_ids)
+    return render_template('templates/files.html', active_navbar_part='files', logged=check_if_logged(), files=files_with_ids, get_file_content_by_id=get_file_content_by_id)
 
 @app.route('/save_changes', methods=['POST'])
 def save_changes():
-    # Pobierz nazwę pliku z formularza
     file_name = request.form['file_name']
-
-    # Pobierz treść przesłaną z formularza CKEditor
     new_content = request.form['ckeditor']
+    username = session['user']
 
-    # Tutaj dokonaj przekształcenia i zapisu do bazy danych
-    file_id = save_content_to_database(new_content, file_name, get_current_user_id(), app)
+    # Sprawdź, czy plik o danej nazwie już istnieje w bazie danych
+    file_id = get_file_id(username, file_name, app)
+
+    if file_id is not None:
+        # Plik istnieje, więc zaktualizuj jego treść
+        update_content_in_database(new_content, file_id)
+    else:
+        # Plik nie istnieje, więc utwórz nowy wpis
+        file_id = save_content_to_database(user_id=get_user_id(username, app),  file_name=file_name, content=new_content, app=app)
 
     # Przekieruj użytkownika gdzieś, gdzie powinien być po zapisie (np. do strony z plikami)
     return redirect(url_for('files'))
@@ -123,13 +130,15 @@ def save_changes():
 def download_file(file_id, app=app):
     # TODO: poprawic nazwe pliku
     # Pobierz zawartość pliku z bazy danych na podstawie ID
+
     file_content = get_file_content_by_id(file_id, app=app)
+    print(file_content)
 
     # Wygeneruj nazwę pliku
     file_name = f'file_{file_id}.txt'  # Możesz dostosować nazwę pliku według potrzeb
 
     # Przygotuj plik do pobrania
-    output = io.BytesIO(file_content)
+    output = io.BytesIO(file_content.encode('utf-8'))
     return send_file(output, as_attachment=True, download_name=file_name, mimetype='text/plain')
     
 @app.route('/editor')
@@ -138,9 +147,13 @@ def editor():
     if check_if_logged() == False:
          return redirect(url_for('index'))
 
-    file_id = 1  # FIXME: poprawic wartosc
-    file_content = get_file_content_by_id(file_id=file_id, app=app)
-    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(), file_content=file_content)
+    #file_id = 1  # FIXME: poprawic wartosc
+    #file_content = get_file_content_by_id(file_id=file_id, app=app)
+    #get_db(app)
+    user_id=get_user_id(username=session['user'], app=app)
+    available_slots = get_available_slots(user_id=user_id, app=app)
+    
+    return render_template('templates/editor.html', active_navbar_part='editor', logged=check_if_logged(), file_content=None, available_slots=available_slots)
 
 @app.route('/edit_file/<int:file_id>')
 def edit_file(file_id):
@@ -178,13 +191,6 @@ def check_if_logged():
         return True
     else:
         return False
-
-def get_current_user_id():
-    if 'user' in session:
-        return get_user_id(session['user'], app=app)
-    else:
-        raise ValueError('Brak użytkownika w sesji')
-
 
 # Kompatybilnosc z uruchomieniem przez Python
 if __name__ == '__main__':

@@ -1,13 +1,18 @@
+<!-- Dziedziczenia stron -->
+{% extends "templates/base.html" %}
+
+<!-- Wypelnienie tytulu-->
+{% block title %}
+Logowanie do edytora
+{% endblock %}
+
+{% block content %}
 <script src="{{url_for('static', filename='js/ckeditor/ckeditor.js')}}"></script>
 <form method="post" action="{{ url_for('save_changes') }}">
-    <!-- Pole wyboru nazwy pliku, jeśli dostępne sloty są większe niż 0 -->
+    <!-- Pole tekstowe dla nazwy pliku, jeśli dostępne sloty są większe niż 0 -->
     {% if available_slots > 0 %}
-        <label for="file_name">Wybierz nazwę pliku:</label>
-        <select name="file_name" id="file_name">
-            {% for slot in range(1, available_slots + 1) %}
-                <option value="file{{ slot }}">file{{ slot }}</option>
-            {% endfor %}
-        </select>
+        <label for="file_name">Nazwa pliku:</label>
+        <input type="text" name="file_name" id="file_name" value="{{ file_name }}">
     {% endif %}
 
     <!-- Dane z bazy danych wczytane do edytora -->
@@ -17,7 +22,7 @@
 
     <!-- Ukryte pole dla nazwy pliku, jeśli jest dostępne -->
     {% if available_slots > 0 %}
-        <input type="hidden" name="file_name" value="">
+        <input type="hidden" name="file_name" value="{{ file_name }}">
     {% endif %}
 
     <!-- Skrypt CKEditor -->
@@ -33,3 +38,13 @@
     <!-- Przycisk submit -->
     <input type="submit" value="Zapisz zmiany">
 </form>
+
+
+<!-- Importuj CKEditor -->
+<script src="{{url_for('static', filename='js/ckeditor/ckeditor.js')}}"></script>
+
+
+<div class="container">
+buttony goes here
+</div>
+{% endblock %}
