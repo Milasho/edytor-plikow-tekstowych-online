@@ -1,7 +1,7 @@
 # ------- Baza Danych -------
 
 # Zewnetrzne biblioteki
-from flask import Flask, g, session, render_template
+from flask import Flask, g, session, render_template, flash
 import sqlite3
 
 def get_db(app : Flask):
@@ -69,17 +69,44 @@ def get_files_with_ids(username: str, app : Flask) -> list:
     finally:
         pass
 
+# def save_content_to_database(user_id, file_name, content, app):
+#     # TODO: Sprawdzanie slotow
+#     try:
+#         conn = get_db(app)
+#         cursor = conn.cursor()
+#         #content_text = content.encode('utf-8')
+
+#         cursor.execute('INSERT INTO user_files (user_id, file_name, content) VALUES (?, ?, ?)', (user_id, file_name, content))
+#         file_id = cursor.lastrowid  # Pobierz identyfikator nowo dodanego pliku
+#         conn.commit()
+#         return file_id
+#     finally:
+#         pass
+
 def save_content_to_database(user_id, file_name, content, app):
-    # TODO: Sprawdzanie slotow
     try:
         conn = get_db(app)
         cursor = conn.cursor()
-        #content_text = content.encode('utf-8')
+        cursor.execute('SELECT available_slots FROM users WHERE user_id = ?', (user_id,))
+        result = cursor.fetchone()
 
-        cursor.execute('INSERT INTO user_files (user_id, file_name, content) VALUES (?, ?, ?)', (user_id, file_name, content))
-        file_id = cursor.lastrowid  # Pobierz identyfikator nowo dodanego pliku
-        conn.commit()
-        return file_id
+        if result:
+            available_slots = result[0]
+            
+            if available_slots > 0:
+                cursor.execute('INSERT INTO user_files (user_id, file_name, content) VALUES (?, ?, ?)', (user_id, file_name, content))
+                file_id = cursor.lastrowid
+                
+                # Zajecie slotu
+                cursor.execute('UPDATE users SET available_slots = ? WHERE user_id = ?', (available_slots - 1, user_id))
+                conn.commit()
+                return file_id
+            else:
+                flash('Brak wystarczającej liczby tokenów do zapisania pliku.', 'error')
+                return None
+        else:
+            flash('Błąd podczas pobierania informacji o dostępnych tokenach.', 'error')
+            return None
     finally:
         pass
 
@@ -119,12 +146,12 @@ def get_available_slots(user_id, app: Flask):
     try:
         conn = get_db(app)
         cursor = conn.cursor()
-        query = 'SELECT avaliable_slots FROM users WHERE user_id = ?'
+        query = 'SELECT available_slots FROM users WHERE user_id = ?'
         cursor.execute(query, (user_id,))
-        avaliable_slots = cursor.fetchone()
+        available_slots = cursor.fetchone()
         conn.commit()
-        if avaliable_slots is not None:
-            return int(avaliable_slots[0])
+        if available_slots is not None:
+            return int(available_slots[0])
         else:
             # Obsługa przypadku, gdy użytkownik nie istnieje lub nie ma dostępnych slotów
             return 0
@@ -154,14 +181,37 @@ def user_is_owner(file_id, user_id, app):
     finally:
         pass
 
-def delete_file_from_database(file_id, app):
+# def delete_file_from_database(file_id, app):
+#     try:
+#         conn = get_db(app)
+#         cursor = conn.cursor()
+
+#         # Usuń plik z bazy danych
+#         cursor.execute('DELETE FROM user_files WHERE file_id = ?', (file_id,))
+#         conn.commit()
+#     finally:
+#         pass
+
+def delete_file_from_database(file_id, user_id, app):
     try:
         conn = get_db(app)
         cursor = conn.cursor()
 
-        # Usuń plik z bazy danych
-        cursor.execute('DELETE FROM user_files WHERE file_id = ?', (file_id,))
-        conn.commit()
+        # Pobierz ilość dostępnych tokenów użytkownika
+        cursor.execute('SELECT available_slots FROM users WHERE id = ?', (user_id,))
+        result = cursor.fetchone()
+
+        if result:
+            available_slots = result[0]
+            # Zabezpieczenie przed wieksza iloscia niz powinien miec w tym miejscu
+            if available_slots < 5:
+                cursor.execute('DELETE FROM user_files WHERE id = ?', (file_id,))
+                cursor.execute('UPDATE users SET available_slots = ? WHERE id = ?', (available_slots + 1, user_id))
+                
+                conn.commit()
+        else:
+            # Użytkownik nie istnieje albo jakis blad
+            pass
     finally:
         pass
 

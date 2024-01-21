@@ -156,6 +156,7 @@ def delete_file(file_id):
     else:
         # Użytkownik nie jest właścicielem pliku -
         flash('Nie masz uprawnień do usunięcia tego pliku.')
+        return None
         #return redirect(url_for('files'))
     
 # ...
