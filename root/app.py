@@ -176,6 +176,11 @@ def upload_file():
     # TODO: Obsluga rozszerzen
     file_name, file_extension = os.path.splitext(file.filename)
 
+    # Odrzuc pliki ktore nie sa tekstowe
+    if file_extension != '.txt':
+        flash('Niepoprawne rozszerzenie pliku', 'error')
+        return redirect(request.referrer)
+
     user_id = get_user_id(username=session['user'], app=app)
     available_tokens = get_available_tokens(user_id, app)
     # FIXME: Poprawic jednolitosc nazewnictwa slots/tokens
